@@ -156,6 +156,12 @@ namespace AutoUpdaterDotNET
                     StringBuilder arguments =
                         new StringBuilder($"\"{tempPath}\" \"{extractionPath}\" \"{executablePath}\"");
 
+                    if (AutoUpdater.ClearAppDirectory)
+                    {
+                        arguments.Append(" -c");
+                    }
+
+
                     string versionPath = Path.Combine(extractionPath, "Versions", _args.InstalledVersion.ToString());
                     arguments.Append($" \"{_args.CreateVersioningFolders}\"");
                     arguments.Append($" \"{versionPath}\"");
