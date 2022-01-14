@@ -69,7 +69,7 @@ namespace AutoUpdaterDotNET
             else
             {
                 var timeSpan = DateTime.Now - _startedAt;
-                long totalSeconds = (long) timeSpan.TotalSeconds;
+                long totalSeconds = (long)timeSpan.TotalSeconds;
                 if (totalSeconds > 0)
                 {
                     var bytesPerSecond = e.BytesReceived / totalSeconds;
@@ -155,6 +155,11 @@ namespace AutoUpdaterDotNET
 
                     StringBuilder arguments =
                         new StringBuilder($"\"{tempPath}\" \"{extractionPath}\" \"{executablePath}\"");
+
+                    string versionPath = Path.Combine(extractionPath, "Versions", _args.InstalledVersion.ToString());
+                    arguments.Append($" \"{_args.CreateVersioningFolders}\"");
+                    arguments.Append($" \"{versionPath}\"");
+
                     string[] args = Environment.GetCommandLineArgs();
                     for (int i = 1; i < args.Length; i++)
                     {
@@ -223,7 +228,7 @@ namespace AutoUpdaterDotNET
 
         private static string BytesToString(long byteCount)
         {
-            string[] suf = {"B", "KB", "MB", "GB", "TB", "PB", "EB"};
+            string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
             if (byteCount == 0)
                 return "0" + suf[0];
             long bytes = Math.Abs(byteCount);
@@ -262,7 +267,7 @@ namespace AutoUpdaterDotNET
                 AutoUpdater.Exit();
                 return;
             }
-            if (_webClient is {IsBusy: true})
+            if (_webClient is { IsBusy: true })
             {
                 _webClient.CancelAsync();
                 DialogResult = DialogResult.Cancel;

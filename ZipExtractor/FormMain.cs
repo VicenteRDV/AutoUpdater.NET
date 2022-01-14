@@ -55,7 +55,7 @@ namespace ZipExtractor
                     {
                         try
                         {
-                            if (process.MainModule is {FileName: { }} && process.MainModule.FileName.Equals(executablePath))
+                            if (process.MainModule is { FileName: { } } && process.MainModule.FileName.Equals(executablePath))
                             {
                                 _logBuilder.AppendLine("Waiting for application process to exit...");
 
@@ -72,7 +72,7 @@ namespace ZipExtractor
                     _logBuilder.AppendLine("BackgroundWorker started successfully.");
 
                     var path = args[2];
-                    
+
                     // Ensures that the last character on the extraction path
                     // is the directory separator char.
                     // Without this, a malicious zip file could try to traverse outside of the expected
@@ -81,8 +81,17 @@ namespace ZipExtractor
                     {
                         path += Path.DirectorySeparatorChar;
                     }
+
+                    if (args.Length >= 5)
+                    {
+                        bool.TryParse(args[4], out bool createVersioningFolder);
+                        var parentDirectory = Directory.GetParent(args[5]);
+                        if (createVersioningFolder)
+                            CopyDirectory(args[2], args[5], parentDirectory.Name, true);
+                    }
+
                     var archive = ZipFile.OpenRead(args[1]);
-                    
+
                     var entries = archive.Entries;
 
                     _logBuilder.AppendLine($"Found total of {entries.Count} files and folders inside the zip file.");
@@ -99,7 +108,7 @@ namespace ZipExtractor
                             }
 
                             var entry = entries[index];
-                        
+
                             string currentFile = string.Format(Resources.CurrentFileExtracting, entry.FullName);
                             _backgroundWorker.ReportProgress(progress, currentFile);
                             int retries = 0;
@@ -246,6 +255,35 @@ namespace ZipExtractor
                 };
 
                 _backgroundWorker.RunWorkerAsync();
+            }
+        }
+
+        private void CopyDirectory(string pSource, string pDestination, string pParentDirectory, bool pRecursive)
+        {
+            var dir = new DirectoryInfo(pSource);
+            if (!dir.Exists)
+                return;
+
+            DirectoryInfo[] dirs = dir.GetDirectories();
+            Directory.CreateDirectory(pDestination);
+            foreach (FileInfo file in dir.GetFiles())
+            {
+                string targetFilePath = Path.Combine(pDestination, file.Name);
+                if (new FileInfo(targetFilePath).Exists == false)
+                    file.CopyTo(targetFilePath);
+            }
+            _logBuilder.AppendLine("Version files have been copied");
+
+            if (pRecursive)
+            {
+                foreach (DirectoryInfo subDir in dirs)
+                {
+                    // This directory name will avoid the infinite loop
+                    if (subDir.Name == pParentDirectory)
+                        continue;
+                    string newDestinationDir = Path.Combine(pDestination, subDir.Name);
+                    CopyDirectory(subDir.FullName, newDestinationDir, pParentDirectory, true);
+                }
             }
         }
 

@@ -19,6 +19,11 @@ namespace AutoUpdaterDotNET
         }
 
         /// <summary>
+        ///     If you want to create a tracking folder of the version
+        /// </summary>
+        public bool CreateVersioningFolders { get; set; }
+
+        /// <summary>
         ///     If new update is available then returns true otherwise false.
         /// </summary>
         public bool IsUpdateAvailable { get; set; }
